@@ -52,6 +52,8 @@ import com.algonit.algo.features.onboarding.presentation.OnboardingScreen
 import com.algonit.algo.features.settings.presentation.NotificationPreferencesScreen
 import kotlinx.coroutines.launch
 import com.algonit.algo.features.auth.presentation.LoginScreen
+import com.algonit.algo.features.chat.presentation.ChatScreen
+import com.algonit.algo.features.chat.presentation.ConversationListScreen
 import com.algonit.algo.features.settings.presentation.SettingsScreen
 
 private const val DEEP_LINK_BASE = "algo://algonit.com"
@@ -266,8 +268,14 @@ fun AlgoNavGraph(
             }
 
             composable(route = Screen.Chat.route) {
-                // Chat list screen - placeholder for existing chat feature
-                // ChatListScreen would be imported from features/chat
+                ConversationListScreen(
+                    onConversationClick = { conversationId ->
+                        navController.navigate(Screen.ChatDetail.createRoute(conversationId))
+                    },
+                    onNewChat = {
+                        navController.navigate(Screen.ChatDetail.createRoute("new"))
+                    }
+                )
             }
 
             composable(
@@ -278,9 +286,10 @@ fun AlgoNavGraph(
                 deepLinks = listOf(
                     navDeepLink { uriPattern = "$DEEP_LINK_BASE/chat/{conversationId}" }
                 )
-            ) { backStackEntry ->
-                val conversationId = backStackEntry.arguments?.getString("conversationId") ?: return@composable
-                // ChatScreen(conversationId = conversationId) - from existing chat feature
+            ) {
+                ChatScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
 
             composable(
