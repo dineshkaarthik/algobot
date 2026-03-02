@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Algo" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/algo_primary</item>
+        <item name="android:navigationBarColor">@color/algo_background</item>
+    </style>
+
+    <style name="Theme.Algo.Splash" parent="Theme.Algo">
+        <item name="android:windowBackground">@color/algo_background</item>
+    </style>
+</resources>
