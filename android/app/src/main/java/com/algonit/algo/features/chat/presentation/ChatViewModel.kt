@@ -3,6 +3,7 @@ package com.algonit.algo.features.chat.presentation
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.algonit.algo.core.audio.TextToSpeechManager
 import com.algonit.algo.core.network.WebSocketClient
 import com.algonit.algo.core.network.WebSocketEvent
 import com.algonit.algo.core.util.AppResult
@@ -31,7 +32,9 @@ data class ChatUiState(
     val suggestedActions: List<SuggestedAction>? = null,
     val conversationId: String? = null,
     val hasMoreMessages: Boolean = false,
-    val isLoadingMore: Boolean = false
+    val isLoadingMore: Boolean = false,
+    val isSpeaking: Boolean = false,
+    val voiceEnabled: Boolean = true
 )
 
 /**
@@ -44,6 +47,7 @@ class ChatViewModel @Inject constructor(
     private val sendMessageUseCase: SendMessageUseCase,
     private val chatRepository: ChatRepository,
     private val webSocketClient: WebSocketClient,
+    private val tts: TextToSpeechManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -78,6 +82,22 @@ class ChatViewModel @Inject constructor(
 
         // Connect WebSocket
         webSocketClient.connect()
+
+        // Observe TTS speaking state
+        viewModelScope.launch {
+            tts.isSpeaking.collect { speaking ->
+                _uiState.update { it.copy(isSpeaking = speaking) }
+            }
+        }
+    }
+
+    fun toggleVoice() {
+        _uiState.update { it.copy(voiceEnabled = !it.voiceEnabled) }
+        if (!_uiState.value.voiceEnabled) tts.stop()
+    }
+
+    fun stopSpeaking() {
+        tts.stop()
     }
 
     /**
@@ -236,6 +256,11 @@ class ChatViewModel @Inject constructor(
                 suggestedActions = response.response.suggestedActions
             )
         }
+
+        // Auto-speak assistant response when voice is enabled
+        if (_uiState.value.voiceEnabled) {
+            tts.speak(response.response.text)
+        }
     }
 
     /**
@@ -309,5 +334,6 @@ class ChatViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         webSocketClient.disconnect()
+        tts.stop()
     }
 }

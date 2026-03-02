@@ -33,12 +33,13 @@ const chatMessageSchema = z.object({
   conversation_id: z.string().uuid().nullable().optional(),
   message: z.string().min(1).max(2000),
   input_type: z.enum(['text', 'voice']).default('text'),
-  audio_url: z.string().url().optional(),
+  audio_url: z.string().url().nullable().optional(),
   context: z
     .object({
-      screen: z.string().optional(),
-      selected_campaign_id: z.string().optional(),
+      screen: z.string().nullable().optional(),
+      selected_campaign_id: z.string().nullable().optional(),
     })
+    .nullable()
     .optional(),
 });
 
