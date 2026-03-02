@@ -82,7 +82,19 @@ async function bootstrap() {
   // ─── Infrastructure ────────────────────────────────────
   const db = initDatabase();
   const redis = getRedis();
-  await redis.connect();
+
+  // Retry Redis connection (Railway internal DNS may take a moment)
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    try {
+      await redis.connect();
+      break;
+    } catch (err) {
+      logger.warn({ attempt, err: err instanceof Error ? err.message : err }, 'Redis connect attempt failed');
+      if (attempt === 5) throw new Error('Could not connect to Redis after 5 attempts');
+      await new Promise((r) => setTimeout(r, attempt * 2000));
+      try { redis.disconnect(false); } catch { /* ignore */ }
+    }
+  }
 
   app.decorate('db', db as any);
   app.decorate('redis', redis as any);

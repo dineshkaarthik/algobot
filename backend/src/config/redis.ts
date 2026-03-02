@@ -6,17 +6,26 @@ let _redis: Redis;
 
 export function initRedis(): Redis {
   const env = getEnv();
+
+  // Log masked URL to help debug connection issues
+  const maskedUrl = env.REDIS_URL.replace(/\/\/([^:]*):([^@]*)@/, '//***:***@');
+  logger.info({ url: maskedUrl }, 'Initializing Redis connection');
+
   _redis = new Redis(env.REDIS_URL, {
     maxRetriesPerRequest: 3,
     retryStrategy(times) {
-      const delay = Math.min(times * 200, 5000);
+      if (times > 15) return null;
+      const delay = Math.min(times * 500, 5000);
       return delay;
     },
     lazyConnect: true,
+    connectTimeout: 15000,
+    enableReadyCheck: true,
   });
 
   _redis.on('connect', () => logger.info('Redis connected'));
-  _redis.on('error', (err) => logger.error({ err }, 'Redis error'));
+  _redis.on('ready', () => logger.info('Redis ready'));
+  _redis.on('error', (err) => logger.error({ err: err.message }, 'Redis error'));
 
   return _redis;
 }
