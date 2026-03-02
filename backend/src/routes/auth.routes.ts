@@ -26,6 +26,18 @@ const apiKeySchema = z.object({
   device_id: z.string().default('android'),
 });
 
+/** Converts camelCase user object to snake_case for mobile clients. */
+function formatUser(user: { id: string; email: string; name: string; role: string; tenantId: string; avatarUrl: string | null }) {
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    tenant_id: user.tenantId,
+    avatar_url: user.avatarUrl,
+  };
+}
+
 export async function authRoutes(app: FastifyInstance) {
   const authService = new AuthService((payload) =>
     app.jwt.sign(payload),
@@ -46,7 +58,7 @@ export async function authRoutes(app: FastifyInstance) {
         refresh_token: result.refreshToken,
         expires_in: result.expiresIn,
         token_type: 'Bearer',
-        user: result.user,
+        user: formatUser(result.user),
       });
     } catch (error) {
       if (error instanceof AuthError) {
@@ -100,7 +112,7 @@ export async function authRoutes(app: FastifyInstance) {
         refresh_token: result.refreshToken,
         expires_in: result.expiresIn,
         token_type: 'Bearer',
-        user: result.user,
+        user: formatUser(result.user),
       });
     } catch (error) {
       if (error instanceof AuthError) {
@@ -129,7 +141,7 @@ export async function authRoutes(app: FastifyInstance) {
         refresh_token: result.refreshToken,
         expires_in: result.expiresIn,
         token_type: 'Bearer',
-        user: result.user,
+        user: formatUser(result.user),
       });
     } catch (error) {
       if (error instanceof AuthError) {
