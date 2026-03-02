@@ -5,6 +5,12 @@ import com.algonit.algo.core.storage.ConversationCache
 import com.algonit.algo.core.storage.PreferencesManager
 import com.algonit.algo.core.storage.SecureStorage
 import com.algonit.algo.features.auth.data.BiometricAuthManager
+import com.algonit.algo.features.auth.data.repository.AuthRepositoryImpl
+import com.algonit.algo.features.auth.domain.repository.AuthRepository
+import com.algonit.algo.features.chat.data.repository.ChatRepositoryImpl
+import com.algonit.algo.features.chat.domain.repository.ChatRepository
+import com.algonit.algo.features.dashboard.data.repository.DashboardRepositoryImpl
+import com.algonit.algo.features.dashboard.domain.repository.DashboardRepository
 import com.algonit.algo.features.growth.data.repository.GrowthRepositoryImpl
 import com.algonit.algo.features.growth.domain.repository.GrowthRepository
 import com.algonit.algo.ui.theme.DarkModeManager
@@ -62,6 +68,24 @@ object AppModule {
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
+
+    @Binds
+    @Singleton
+    abstract fun bindAuthRepository(
+        impl: AuthRepositoryImpl
+    ): AuthRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindChatRepository(
+        impl: ChatRepositoryImpl
+    ): ChatRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindDashboardRepository(
+        impl: DashboardRepositoryImpl
+    ): DashboardRepository
 
     @Binds
     @Singleton
