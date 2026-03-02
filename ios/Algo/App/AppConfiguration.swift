@@ -46,9 +46,9 @@ enum AppConfiguration {
     static var baseURL: URL {
         switch current {
         case .debug:
-            return URL(string: "https://api-staging.algo.algonit.com/v1")!
+            return URL(string: "https://algobot-production-1621.up.railway.app/api/v1")!
         case .release:
-            return URL(string: "https://api.algo.algonit.com/v1")!
+            return URL(string: "https://algobot-production-1621.up.railway.app/api/v1")!
         }
     }
 
@@ -56,9 +56,9 @@ enum AppConfiguration {
     static var webSocketURL: URL {
         switch current {
         case .debug:
-            return URL(string: "wss://api-staging.algo.algonit.com/v1/ws")!
+            return URL(string: "wss://algobot-production-1621.up.railway.app/api/v1/ws")!
         case .release:
-            return URL(string: "wss://api.algo.algonit.com/v1/ws")!
+            return URL(string: "wss://algobot-production-1621.up.railway.app/api/v1/ws")!
         }
     }
 

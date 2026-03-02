@@ -21,15 +21,15 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "BASE_URL", "\"https://api.algonit.com/v1\"")
-        buildConfigField("String", "WS_URL", "\"wss://api.algonit.com/v1/ws\"")
+        buildConfigField("String", "BASE_URL", "\"https://algobot-production-1621.up.railway.app/api/v1\"")
+        buildConfigField("String", "WS_URL", "\"wss://algobot-production-1621.up.railway.app/api/v1/ws\"")
     }
 
     buildTypes {
         debug {
             isMinifyEnabled = false
-            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:3000/v1\"")
-            buildConfigField("String", "WS_URL", "\"ws://10.0.2.2:3000/v1/ws\"")
+            buildConfigField("String", "BASE_URL", "\"https://algobot-production-1621.up.railway.app/api/v1\"")
+            buildConfigField("String", "WS_URL", "\"wss://algobot-production-1621.up.railway.app/api/v1/ws\"")
         }
         release {
             isMinifyEnabled = true
