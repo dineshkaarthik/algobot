@@ -1,0 +1,24 @@
+{
+  "project_info": {
+    "project_number": "000000000000",
+    "project_id": "algo-placeholder",
+    "storage_bucket": "algo-placeholder.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:000000000000:android:0000000000000000",
+        "android_client_info": {
+          "package_name": "com.algonit.algo"
+        }
+      },
+      "api_key": [
+        {
+          "current_key": "AIzaSyPlaceholder_replace_with_real_key"
+        }
+      ],
+      "services": {}
+    }
+  ],
+  "configuration_version": "1"
+}
