@@ -16,6 +16,7 @@ object ApiEndpoints {
     const val REFRESH = "/auth/refresh"
     const val LOGOUT = "/auth/logout"
     const val REGISTER = "/auth/register"
+    const val API_KEY_LOGIN = "/auth/api-key"
 
     // Chat
     const val MESSAGE = "/chat/message"

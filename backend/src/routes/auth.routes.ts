@@ -21,6 +21,11 @@ const registerSchema = z.object({
   algonit_org_id: z.string(),
 });
 
+const apiKeySchema = z.object({
+  api_key: z.string().min(1),
+  device_id: z.string().default('android'),
+});
+
 export async function authRoutes(app: FastifyInstance) {
   const authService = new AuthService((payload) =>
     app.jwt.sign(payload),
@@ -91,6 +96,35 @@ export async function authRoutes(app: FastifyInstance) {
       );
 
       return reply.status(201).send({
+        access_token: result.accessToken,
+        refresh_token: result.refreshToken,
+        expires_in: result.expiresIn,
+        token_type: 'Bearer',
+        user: result.user,
+      });
+    } catch (error) {
+      if (error instanceof AuthError) {
+        return reply.status(error.statusCode).send({
+          error: { code: error.code, message: error.message },
+        });
+      }
+      throw error;
+    }
+  });
+
+  /**
+   * POST /auth/api-key
+   * Authenticate with an Algonit API key.
+   * Validates the key, auto-creates tenant + user, stores the key encrypted.
+   */
+  app.post('/api-key', {
+    config: { rateLimit: { max: 5, timeWindow: '1 minute' } },
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const body = apiKeySchema.parse(request.body);
+      const result = await authService.loginWithApiKey(body.api_key, body.device_id);
+
+      return reply.send({
         access_token: result.accessToken,
         refresh_token: result.refreshToken,
         expires_in: result.expiresIn,

@@ -28,6 +28,15 @@ data class RegisterRequest(
 )
 
 /**
+ * Request body for the POST /auth/api-key endpoint.
+ */
+@Serializable
+data class ApiKeyLoginRequest(
+    @SerialName("api_key") val apiKey: String,
+    @SerialName("device_id") val deviceId: String,
+)
+
+/**
  * Request body for the POST /auth/logout endpoint.
  */
 @Serializable

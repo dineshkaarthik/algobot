@@ -6,6 +6,7 @@ import { getDb } from '../../config/database.js';
 import { getRedis } from '../../config/redis.js';
 import { getEnv } from '../../config/env.js';
 import { users, refreshTokens, tenants } from '../../models/schema.js';
+import { AlgonitTokenStore } from '../algonit/algonit.token.store.js';
 import { logger } from '../../utils/logger.js';
 
 export interface LoginResult {
@@ -212,6 +213,107 @@ export class AuthService {
       .returning();
 
     return this.login(email, password, 'registration');
+  }
+
+  /**
+   * Authenticates using an Algonit API key.
+   * Validates the key against Algonit's profile endpoint,
+   * auto-creates tenant + user if needed, stores the encrypted API key,
+   * and returns JWT tokens.
+   */
+  async loginWithApiKey(apiKey: string, deviceId: string): Promise<LoginResult> {
+    const env = getEnv();
+    const db = getDb();
+
+    // 1. Validate the API key by calling Algonit profile endpoint
+    let profile: { name: string; email: string; orgId: string; orgName: string };
+    try {
+      const res = await fetch(`${env.ALGONIT_API_URL}/me`, {
+        headers: { Authorization: `Bearer ${apiKey}` },
+      });
+      if (!res.ok) {
+        throw new AuthError('Invalid API key', 'INVALID_API_KEY', 401);
+      }
+      const data = await res.json() as any;
+      profile = {
+        name: data.name || data.fullName || 'Algonit User',
+        email: data.email || `user@algonit.local`,
+        orgId: String(data.orgId || data.organizationId || data.id || 'default'),
+        orgName: data.orgName || data.organizationName || data.companyName || 'My Organization',
+      };
+    } catch (error) {
+      if (error instanceof AuthError) throw error;
+      logger.error({ error }, 'Failed to validate Algonit API key');
+      throw new AuthError('Could not validate API key with Algonit', 'API_KEY_VALIDATION_FAILED', 401);
+    }
+
+    // 2. Find or create tenant by algonitOrgId
+    let [tenant] = await db
+      .select()
+      .from(tenants)
+      .where(eq(tenants.algonitOrgId, profile.orgId))
+      .limit(1);
+
+    if (!tenant) {
+      [tenant] = await db
+        .insert(tenants)
+        .values({
+          name: profile.orgName,
+          algonitOrgId: profile.orgId,
+        })
+        .returning();
+    }
+
+    // 3. Find or create user
+    let [user] = await db
+      .select()
+      .from(users)
+      .where(and(eq(users.tenantId, tenant.id), eq(users.email, profile.email.toLowerCase())))
+      .limit(1);
+
+    if (!user) {
+      const passwordHash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12);
+      [user] = await db
+        .insert(users)
+        .values({
+          tenantId: tenant.id,
+          email: profile.email.toLowerCase(),
+          passwordHash,
+          name: profile.name,
+          role: 'admin',
+        })
+        .returning();
+    }
+
+    // 4. Store the API key encrypted for this tenant
+    const tokenStore = new AlgonitTokenStore();
+    await tokenStore.storeToken(tenant.id, apiKey, profile.orgId, user.id);
+
+    // 5. Generate JWT tokens
+    const accessToken = this.generateAccessToken({
+      userId: user.id,
+      tenantId: tenant.id,
+      role: user.role,
+      deviceId,
+    });
+
+    const refreshTokenValue = await this.generateRefreshToken(user.id, deviceId);
+
+    await db.update(users).set({ lastLoginAt: new Date() }).where(eq(users.id, user.id));
+
+    return {
+      accessToken,
+      refreshToken: refreshTokenValue,
+      expiresIn: env.JWT_EXPIRES_IN,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        tenantId: user.tenantId,
+        avatarUrl: user.avatarUrl,
+      },
+    };
   }
 
   private generateAccessToken(payload: TokenPayload): string {

@@ -236,6 +236,42 @@ class AuthViewModel @Inject constructor(
     }
 
     /**
+     * Authenticates with an Algonit API key.
+     */
+    fun loginWithApiKey(apiKey: String) {
+        if (apiKey.isBlank()) {
+            _uiState.update { it.copy(error = "API key is required") }
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+
+            when (val result = authRepository.loginWithApiKey(apiKey)) {
+                is AppResult.Success -> {
+                    _uiState.update {
+                        it.copy(
+                            isAuthenticated = true,
+                            isLoading = false,
+                            currentUser = result.data,
+                            error = null
+                        )
+                    }
+                }
+                is AppResult.Error -> {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = result.error.toUserMessage()
+                        )
+                    }
+                }
+                else -> { }
+            }
+        }
+    }
+
+    /**
      * Creates a new account and authenticates the user.
      */
     fun register(email: String, password: String, name: String, tenantId: String) {

@@ -9,6 +9,7 @@ import com.algonit.algo.core.network.toApiError
 import com.algonit.algo.core.storage.SecureStorage
 import com.algonit.algo.core.util.AppResult
 import com.algonit.algo.features.auth.data.model.AuthToken
+import com.algonit.algo.features.auth.data.model.ApiKeyLoginRequest
 import com.algonit.algo.features.auth.data.model.LoginRequest
 import com.algonit.algo.features.auth.data.model.LogoutRequest
 import com.algonit.algo.features.auth.data.model.RefreshRequest
@@ -50,6 +51,25 @@ class AuthRepositoryImpl @Inject constructor(
 
             val authToken: AuthToken = apiClient.postUnauthenticated(
                 endpoint = ApiEndpoints.LOGIN,
+                body = request
+            )
+
+            storeAuthData(authToken)
+            AppResult.Success(authToken.user)
+        } catch (e: Exception) {
+            AppResult.Error(e.toApiError())
+        }
+    }
+
+    override suspend fun loginWithApiKey(apiKey: String): AppResult<User> {
+        return try {
+            val request = ApiKeyLoginRequest(
+                apiKey = apiKey.trim(),
+                deviceId = deviceId
+            )
+
+            val authToken: AuthToken = apiClient.postUnauthenticated(
+                endpoint = ApiEndpoints.API_KEY_LOGIN,
                 body = request
             )
 

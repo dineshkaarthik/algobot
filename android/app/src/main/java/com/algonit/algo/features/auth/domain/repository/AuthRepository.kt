@@ -16,6 +16,12 @@ interface AuthRepository {
     suspend fun login(email: String, password: String): AppResult<User>
 
     /**
+     * Authenticates using an Algonit API key.
+     * The backend validates the key, auto-creates tenant + user, and returns JWT tokens.
+     */
+    suspend fun loginWithApiKey(apiKey: String): AppResult<User>
+
+    /**
      * Creates a new user account and authenticates immediately.
      * On success, tokens are stored securely and the user profile is returned.
      */
