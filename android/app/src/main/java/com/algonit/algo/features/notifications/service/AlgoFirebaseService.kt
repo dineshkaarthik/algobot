@@ -20,11 +20,13 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import javax.inject.Inject
+import javax.inject.Named
 
 @AndroidEntryPoint
 class AlgoFirebaseService : FirebaseMessagingService() {
 
     @Inject
+    @Named("api")
     lateinit var httpClient: HttpClient
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
