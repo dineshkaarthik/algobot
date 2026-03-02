@@ -1,0 +1,121 @@
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { z } from 'zod';
+import { AuthService, AuthError } from '../services/auth/auth.service.js';
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+  device_id: z.string(),
+  device_type: z.enum(['ios', 'android']).optional(),
+});
+
+const refreshSchema = z.object({
+  refresh_token: z.string(),
+});
+
+const registerSchema = z.object({
+  tenant_name: z.string().min(2),
+  email: z.string().email(),
+  password: z.string().min(8),
+  name: z.string().min(2),
+  algonit_org_id: z.string(),
+});
+
+export async function authRoutes(app: FastifyInstance) {
+  const authService = new AuthService((payload) =>
+    app.jwt.sign(payload),
+  );
+
+  /**
+   * POST /auth/login
+   */
+  app.post('/login', {
+    config: { rateLimit: { max: 5, timeWindow: '1 minute' } },
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const body = loginSchema.parse(request.body);
+      const result = await authService.login(body.email, body.password, body.device_id);
+
+      return reply.send({
+        access_token: result.accessToken,
+        refresh_token: result.refreshToken,
+        expires_in: result.expiresIn,
+        token_type: 'Bearer',
+        user: result.user,
+      });
+    } catch (error) {
+      if (error instanceof AuthError) {
+        return reply.status(error.statusCode).send({
+          error: { code: error.code, message: error.message },
+        });
+      }
+      throw error;
+    }
+  });
+
+  /**
+   * POST /auth/refresh
+   */
+  app.post('/refresh', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const body = refreshSchema.parse(request.body);
+      const result = await authService.refresh(body.refresh_token);
+
+      return reply.send({
+        access_token: result.accessToken,
+        refresh_token: result.refreshToken,
+        expires_in: result.expiresIn,
+      });
+    } catch (error) {
+      if (error instanceof AuthError) {
+        return reply.status(error.statusCode).send({
+          error: { code: error.code, message: error.message },
+        });
+      }
+      throw error;
+    }
+  });
+
+  /**
+   * POST /auth/register
+   */
+  app.post('/register', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const body = registerSchema.parse(request.body);
+      const result = await authService.register(
+        body.tenant_name,
+        body.email,
+        body.password,
+        body.name,
+        body.algonit_org_id,
+      );
+
+      return reply.status(201).send({
+        access_token: result.accessToken,
+        refresh_token: result.refreshToken,
+        expires_in: result.expiresIn,
+        token_type: 'Bearer',
+        user: result.user,
+      });
+    } catch (error) {
+      if (error instanceof AuthError) {
+        return reply.status(error.statusCode).send({
+          error: { code: error.code, message: error.message },
+        });
+      }
+      throw error;
+    }
+  });
+
+  /**
+   * POST /auth/logout (protected)
+   */
+  app.post('/logout', {
+    onRequest: [async (req) => { await req.jwtVerify(); }],
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    const decoded = request.user as any;
+    const body = request.body as { device_id?: string };
+    await authService.logout(decoded.sub, body.device_id || 'unknown');
+    return reply.send({ status: 'ok' });
+  });
+}

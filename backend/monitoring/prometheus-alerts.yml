@@ -1,0 +1,264 @@
+# =============================================================================
+# Algo Bot — Prometheus Alert Rules
+# =============================================================================
+# Add to prometheus.yml:
+#   rule_files:
+#     - "prometheus-alerts.yml"
+# =============================================================================
+
+groups:
+  # ---------------------------------------------------------------------------
+  # HTTP & API alerts
+  # ---------------------------------------------------------------------------
+  - name: algo-http-alerts
+    rules:
+      - alert: HighErrorRate
+        expr: >
+          rate(algo_http_errors_total[5m])
+          / rate(algo_http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          service: algo-backend
+        annotations:
+          summary: "High HTTP error rate (>5%)"
+          description: >
+            HTTP error rate is {{ $value | humanizePercentage }} over the
+            last 5 minutes. Investigate application logs for root cause.
+          runbook_url: "https://wiki.algonit.com/runbooks/high-error-rate"
+
+      - alert: HighLatencyP95
+        expr: >
+          histogram_quantile(0.95,
+            rate(algo_http_request_duration_ms_bucket[5m])
+          ) > 2000
+        for: 5m
+        labels:
+          severity: warning
+          service: algo-backend
+        annotations:
+          summary: "P95 HTTP latency exceeds 2 seconds"
+          description: >
+            95th-percentile request latency is {{ $value }}ms.
+            Consider scaling horizontally or checking downstream services.
+
+      - alert: HighLatencyP99
+        expr: >
+          histogram_quantile(0.99,
+            rate(algo_http_request_duration_ms_bucket[5m])
+          ) > 5000
+        for: 5m
+        labels:
+          severity: critical
+          service: algo-backend
+        annotations:
+          summary: "P99 HTTP latency exceeds 5 seconds"
+          description: >
+            99th-percentile request latency is {{ $value }}ms.
+            This indicates severe performance degradation.
+
+      - alert: HighRequestRate
+        expr: rate(algo_http_requests_total[1m]) > 5000
+        for: 3m
+        labels:
+          severity: warning
+          service: algo-backend
+        annotations:
+          summary: "Unusually high request rate (>5000 req/s)"
+          description: >
+            Request rate is {{ $value }} req/s. This may indicate a
+            traffic spike or potential DDoS. Check rate limiting.
+
+  # ---------------------------------------------------------------------------
+  # LLM / AI alerts
+  # ---------------------------------------------------------------------------
+  - name: algo-llm-alerts
+    rules:
+      - alert: LLMFallbackRate
+        expr: >
+          rate(algo_llm_fallbacks_total[5m])
+          / rate(algo_llm_requests_total[5m]) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          service: algo-backend
+        annotations:
+          summary: "LLM fallback rate exceeds 10%"
+          description: >
+            {{ $value | humanizePercentage }} of LLM requests are falling
+            back from Claude to GPT-4o. Check Anthropic API status.
+
+      - alert: LLMHighLatency
+        expr: >
+          histogram_quantile(0.95,
+            rate(algo_llm_response_duration_ms_bucket[5m])
+          ) > 10000
+        for: 5m
+        labels:
+          severity: warning
+          service: algo-backend
+        annotations:
+          summary: "LLM P95 response time exceeds 10 seconds"
+          description: >
+            LLM response latency is {{ $value }}ms at P95.
+            Users may experience noticeable delays.
+
+      - alert: LLMErrorRate
+        expr: >
+          rate(algo_llm_errors_total[5m])
+          / rate(algo_llm_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          service: algo-backend
+        annotations:
+          summary: "LLM error rate exceeds 5%"
+          description: >
+            {{ $value | humanizePercentage }} of LLM requests are failing.
+            Check API keys, rate limits, and provider status pages.
+
+      - alert: HighTokenUsage
+        expr: >
+          sum(increase(algo_llm_tokens_total{direction="input"}[1h]))
+          + sum(increase(algo_llm_tokens_total{direction="output"}[1h]))
+          > 1000000
+        for: 0m
+        labels:
+          severity: warning
+          service: algo-backend
+        annotations:
+          summary: "LLM token usage exceeds 1M tokens/hour"
+          description: >
+            Token consumption is unusually high. Review for prompt
+            injection, loops in agent reasoning, or traffic spikes.
+
+  # ---------------------------------------------------------------------------
+  # Infrastructure alerts
+  # ---------------------------------------------------------------------------
+  - name: algo-infra-alerts
+    rules:
+      - alert: LowCreditBalance
+        expr: algo_credit_balance < 100
+        for: 1h
+        labels:
+          severity: warning
+          service: algo-backend
+        annotations:
+          summary: "LLM API credit balance is low (<100)"
+          description: >
+            Credit balance is {{ $value }}. Top up to avoid service
+            interruption.
+
+      - alert: HighMemoryUsage
+        expr: >
+          process_resident_memory_bytes{job="algo-backend"}
+          / 1024 / 1024 > 512
+        for: 10m
+        labels:
+          severity: warning
+          service: algo-backend
+        annotations:
+          summary: "Backend memory usage exceeds 512 MB"
+          description: >
+            Process is using {{ $value }}MB of memory. Check for
+            memory leaks or increase pod resource limits.
+
+      - alert: HighCPUUsage
+        expr: >
+          rate(process_cpu_seconds_total{job="algo-backend"}[5m]) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+          service: algo-backend
+        annotations:
+          summary: "Backend CPU usage exceeds 80%"
+          description: >
+            CPU utilization is {{ $value | humanizePercentage }}.
+            Consider horizontal scaling.
+
+      - alert: RedisConnectionFailure
+        expr: algo_redis_connection_errors_total > 0
+        for: 1m
+        labels:
+          severity: critical
+          service: algo-backend
+        annotations:
+          summary: "Redis connection errors detected"
+          description: >
+            Redis connection failures are occurring. Check ElastiCache
+            cluster health and network connectivity.
+
+      - alert: PostgresConnectionPoolExhausted
+        expr: algo_pg_pool_available < 2
+        for: 2m
+        labels:
+          severity: critical
+          service: algo-backend
+        annotations:
+          summary: "PostgreSQL connection pool nearly exhausted"
+          description: >
+            Only {{ $value }} connections available in the pool. This
+            will cause request failures. Check for connection leaks.
+
+  # ---------------------------------------------------------------------------
+  # WebSocket & real-time alerts
+  # ---------------------------------------------------------------------------
+  - name: algo-websocket-alerts
+    rules:
+      - alert: HighWebSocketConnections
+        expr: algo_ws_active_connections > 5000
+        for: 5m
+        labels:
+          severity: warning
+          service: algo-backend
+        annotations:
+          summary: "WebSocket connections exceed 5000"
+          description: >
+            {{ $value }} active WebSocket connections. Ensure the
+            server has sufficient file descriptors and memory.
+
+      - alert: WebSocketErrorRate
+        expr: >
+          rate(algo_ws_errors_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: algo-backend
+        annotations:
+          summary: "High WebSocket error rate"
+          description: >
+            WebSocket errors are occurring at {{ $value }}/s.
+            Check for protocol issues or client disconnects.
+
+  # ---------------------------------------------------------------------------
+  # Business logic alerts
+  # ---------------------------------------------------------------------------
+  - name: algo-business-alerts
+    rules:
+      - alert: NoConversationsCreated
+        expr: >
+          increase(algo_conversations_created_total[1h]) == 0
+        for: 2h
+        labels:
+          severity: warning
+          service: algo-backend
+        annotations:
+          summary: "No conversations created in the last 2 hours"
+          description: >
+            Zero new conversations during business hours may indicate
+            an issue with the chat service or auth flow.
+
+      - alert: HighActionCancellationRate
+        expr: >
+          rate(algo_actions_cancelled_total[1h])
+          / (rate(algo_actions_confirmed_total[1h])
+             + rate(algo_actions_cancelled_total[1h])) > 0.5
+        for: 1h
+        labels:
+          severity: info
+          service: algo-backend
+        annotations:
+          summary: "More than 50% of suggested actions are being cancelled"
+          description: >
+            Users are cancelling {{ $value | humanizePercentage }} of
+            suggested actions. Review action quality and relevance.
