@@ -1,9 +1,12 @@
 FROM node:22-alpine AS builder
 
 WORKDIR /app
-COPY package.json package-lock.json ./
+
+# Copy backend files (works whether build context is repo root or backend/)
+COPY backend/package.json backend/package-lock.json ./
 RUN npm ci
-COPY . .
+
+COPY backend/ .
 RUN npm run build
 
 FROM node:22-alpine AS runner

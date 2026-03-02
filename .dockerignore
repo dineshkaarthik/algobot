@@ -1,0 +1,18 @@
+# Only include backend/ for Docker builds
+android/
+ios/
+docs/
+.git/
+.gitignore
+*.md
+
+# Backend excludes
+backend/node_modules
+backend/dist
+backend/.env
+backend/.env.local
+backend/uploads
+backend/loadtest
+backend/monitoring
+backend/src/tests
+backend/tests
