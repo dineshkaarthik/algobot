@@ -4,11 +4,36 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Chat bubble icon for Algo -->
+
+    <!-- Algonit "an" brand mark -->
+
+    <!-- "a" letter - outer shape with counter hole -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M34,30h40c2.2,0 4,1.8 4,4v28c0,2.2 -1.8,4 -4,4H42l-8,8v-8c-2.2,0 -4,-1.8 -4,-4V34c0,-2.2 1.8,-4 4,-4z" />
+        android:fillColor="#0047AB"
+        android:pathData="M42,72 C31,72 24,64 24,55.5 C24,47 31,39 42,39 C47,39 51,41.5 54,45 L54,40 L62,40 L62,72 L54,72 L54,68 C51,71.5 47,72 42,72 Z M42,47 C35,47 32,50.5 32,55.5 C32,60.5 35,64 42,64 C49,64 54,60.5 54,55.5 C54,50.5 49,47 42,47 Z" />
+
+    <!-- "n" letter - arch extending right -->
     <path
-        android:fillColor="#0066FF"
-        android:pathData="M42,44h24v3H42V44zM42,50h18v3H42V50zM42,38h24v3H42V38z" />
+        android:fillColor="#0047AB"
+        android:pathData="M64,72 L64,53 C64,46 68.5,39 76,39 C82,39 86,43 86,49 L86,72 L78,72 L78,50 C78,47.5 76.5,46 74,46 C70,46 64,48 64,53" />
+
+    <!-- Top-right accent line -->
+    <path
+        android:fillColor="#0047AB"
+        android:pathData="M72,30 L83,30 L83,33 L72,33 Z" />
+
+    <!-- Top-right accent dot -->
+    <path
+        android:fillColor="#0047AB"
+        android:pathData="M86,31.5 m-2.5,0 a2.5,2.5 0 1,1 5,0 a2.5,2.5 0 1,1 -5,0" />
+
+    <!-- Bottom-left accent line -->
+    <path
+        android:fillColor="#0047AB"
+        android:pathData="M25,76 L36,76 L36,79 L25,79 Z" />
+
+    <!-- Bottom-left accent dot -->
+    <path
+        android:fillColor="#0047AB"
+        android:pathData="M22,77.5 m-2.5,0 a2.5,2.5 0 1,1 5,0 a2.5,2.5 0 1,1 -5,0" />
 </vector>

@@ -3,9 +3,6 @@ package com.algonit.algo.features.auth.presentation
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChatBubble
-import androidx.compose.material3.Icon
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -94,17 +91,19 @@ fun SplashScreen(
                 .alpha(alphaAnim.value)
                 .scale(scaleAnim.value)
         ) {
-            Icon(
-                imageVector = Icons.Filled.ChatBubble,
-                contentDescription = "Algo Logo",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(120.dp)
+            Text(
+                text = "an",
+                style = MaterialTheme.typography.displayLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = androidx.compose.ui.unit.TextUnit(72f, androidx.compose.ui.unit.TextUnitType.Sp)
+                ),
+                color = androidx.compose.ui.graphics.Color(0xFF0047AB)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Algo",
+                text = "Algonit",
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary

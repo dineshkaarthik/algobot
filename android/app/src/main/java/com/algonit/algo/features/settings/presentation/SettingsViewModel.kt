@@ -2,13 +2,13 @@ package com.algonit.algo.features.settings.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.algonit.algo.features.auth.domain.repository.AuthRepository
 import com.algonit.algo.ui.theme.DarkModeManager
 import com.algonit.algo.ui.theme.ThemeMode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -69,7 +69,8 @@ data class SettingsUiState(
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     @Named("api") private val httpClient: HttpClient,
-    private val darkModeManager: DarkModeManager
+    private val darkModeManager: DarkModeManager,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -174,24 +175,13 @@ class SettingsViewModel @Inject constructor(
 
     fun logout() {
         viewModelScope.launch {
-            try {
-                httpClient.post("/auth/logout") {
-                    contentType(ContentType.Application.Json)
-                    setBody(mapOf("device_id" to getDeviceId()))
-                }
-            } catch (_: Exception) {
-                // Continue with local logout even if server call fails
-            }
+            // AuthRepository.logout() handles both the API call and clearing secure storage
+            authRepository.logout()
 
-            // Clear local state
+            // Clear local settings state
             _uiState.update {
                 SettingsUiState()
             }
         }
-    }
-
-    private fun getDeviceId(): String {
-        // In production, this would use SecureStorage or Android Settings
-        return "android_device"
     }
 }

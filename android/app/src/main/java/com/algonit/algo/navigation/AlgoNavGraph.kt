@@ -51,6 +51,7 @@ import com.algonit.algo.features.notifications.presentation.NotificationsViewMod
 import com.algonit.algo.features.onboarding.presentation.OnboardingScreen
 import com.algonit.algo.features.settings.presentation.NotificationPreferencesScreen
 import kotlinx.coroutines.launch
+import com.algonit.algo.features.auth.presentation.LoginScreen
 import com.algonit.algo.features.settings.presentation.SettingsScreen
 
 private const val DEEP_LINK_BASE = "algo://algonit.com"
@@ -331,11 +332,13 @@ fun AlgoNavGraph(
             }
 
             composable(route = Screen.Login.route) {
-                // LoginScreen - from existing auth feature
-            }
-
-            composable(route = Screen.Splash.route) {
-                // SplashScreen - from existing auth feature
+                LoginScreen(
+                    onLoginSuccess = {
+                        navController.navigate(Screen.Dashboard.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
+                        }
+                    }
+                )
             }
         }
     }

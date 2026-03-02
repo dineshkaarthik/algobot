@@ -10,14 +10,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.algonit.algo.core.storage.PreferencesManager
+import com.algonit.algo.features.auth.presentation.AuthViewModel
 import com.algonit.algo.navigation.AlgoNavGraph
 import com.algonit.algo.navigation.DeepLinkHandler
 import com.algonit.algo.navigation.Screen
@@ -84,26 +82,29 @@ private fun AlgoApp(
     preferencesManager: PreferencesManager,
     hasCompletedOnboarding: Boolean
 ) {
-    // In a full implementation, AuthViewModel would be injected here to
-    // check authentication state and decide the start destination.
-    // For now, we go directly to the main navigation graph.
-    var isAuthenticated by remember { mutableStateOf(true) } // Placeholder
+    val authViewModel: AuthViewModel = hiltViewModel()
+    val authState by authViewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        // Simulate auth check delay or verify token
-        // val authViewModel: AuthViewModel = hiltViewModel() would be used in production
-        onReady()
+    // Signal splash screen to dismiss once auth check completes
+    LaunchedEffect(authState.isCheckingAuth) {
+        if (!authState.isCheckingAuth) {
+            onReady()
+        }
     }
 
-    if (isAuthenticated) {
-        AlgoNavGraph(
-            startDestination = Screen.Dashboard.route,
-            deepLinkDestination = deepLinkDestination,
-            preferencesManager = preferencesManager,
-            hasCompletedOnboarding = hasCompletedOnboarding
-        )
+    // Don't render until auth check completes
+    if (authState.isCheckingAuth) return
+
+    val startDestination = if (authState.isAuthenticated) {
+        Screen.Dashboard.route
     } else {
-        // LoginScreen would go here from features/auth
-        // LoginScreen(onLoginSuccess = { isAuthenticated = true })
+        Screen.Login.route
     }
+
+    AlgoNavGraph(
+        startDestination = startDestination,
+        deepLinkDestination = deepLinkDestination,
+        preferencesManager = preferencesManager,
+        hasCompletedOnboarding = hasCompletedOnboarding
+    )
 }

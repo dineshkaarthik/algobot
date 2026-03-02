@@ -4,7 +4,6 @@ import android.app.Activity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -67,6 +66,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun LoginScreen(
     viewModel: AuthViewModel = hiltViewModel(),
+    onLoginSuccess: () -> Unit = {},
     onNavigateToRegister: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -79,6 +79,13 @@ fun LoginScreen(
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
     val activity = context as? FragmentActivity
+
+    // Navigate to main screen on successful login
+    LaunchedEffect(uiState.isAuthenticated) {
+        if (uiState.isAuthenticated) {
+            onLoginSuccess()
+        }
+    }
 
     // Check biometric availability when the screen first composes
     LaunchedEffect(Unit) {
@@ -109,17 +116,19 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(48.dp))
 
             // App Logo
-            Icon(
-                imageVector = Icons.Filled.ChatBubble,
-                contentDescription = "Algo Logo",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(96.dp)
+            Text(
+                text = "an",
+                style = MaterialTheme.typography.displayLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = androidx.compose.ui.unit.TextUnit(64f, androidx.compose.ui.unit.TextUnitType.Sp)
+                ),
+                color = androidx.compose.ui.graphics.Color(0xFF0047AB)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Algo",
+                text = "Algonit",
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
