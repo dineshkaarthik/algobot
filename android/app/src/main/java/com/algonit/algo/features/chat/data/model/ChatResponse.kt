@@ -124,3 +124,12 @@ data class MessagesListResponse(
     val messages: List<Message>,
     val pagination: Pagination
 )
+
+/**
+ * Generic status response for operations like archive.
+ */
+@Serializable
+data class StatusResponse(
+    val status: String,
+    val message: String? = null
+)

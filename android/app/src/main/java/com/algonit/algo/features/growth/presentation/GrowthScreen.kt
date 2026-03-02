@@ -153,17 +153,11 @@ fun GrowthScreen(
                             items = uiState.recommendations,
                             key = { it.id }
                         ) { recommendation ->
-                            AnimatedVisibility(
-                                visible = true,
-                                enter = fadeIn(),
-                                exit = fadeOut()
-                            ) {
-                                RecommendationCard(
-                                    recommendation = recommendation,
-                                    onAccept = viewModel::acceptRecommendation,
-                                    onDismiss = viewModel::dismissRecommendation
-                                )
-                            }
+                            RecommendationCard(
+                                recommendation = recommendation,
+                                onAccept = viewModel::acceptRecommendation,
+                                onDismiss = viewModel::dismissRecommendation
+                            )
                         }
 
                         // Bottom spacing for navigation bar

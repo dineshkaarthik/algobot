@@ -3,7 +3,9 @@ package com.algonit.algo.features.auth.presentation
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChatBubble
+import androidx.compose.material3.Icon
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,12 +23,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.res.painterResource
+
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.algonit.algo.R
+
 import kotlinx.coroutines.delay
 
 /**
@@ -92,9 +94,10 @@ fun SplashScreen(
                 .alpha(alphaAnim.value)
                 .scale(scaleAnim.value)
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.algo_logo),
+            Icon(
+                imageVector = Icons.Filled.ChatBubble,
                 contentDescription = "Algo Logo",
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(120.dp)
             )
 

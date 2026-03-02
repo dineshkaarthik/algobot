@@ -1,38 +1,29 @@
 package com.algonit.algo.features.chat.presentation.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.algonit.algo.features.chat.data.model.StructuredData
-import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
-import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottomAxis
-import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStartAxis
-import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
-import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
-import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
-import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
-import com.patrykandpatrick.vico.core.cartesian.data.columnSeries
-import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.doubleOrNull
-import kotlinx.serialization.json.jsonPrimitive
 
 /**
- * Chart visualization using the Vico charting library.
- *
- * Renders bar or line charts from structured data metrics.
- * Automatically extracts numeric values from the metrics JSON objects
- * and maps them to chart data points.
- *
- * Themed with Material3 colors for consistent appearance.
- *
- * @param structuredData The structured data containing metrics and chart type.
+ * Simple chart visualization using native Compose.
+ * Displays bar charts from structured data metrics.
  */
 @Composable
 fun ChartView(
@@ -42,98 +33,75 @@ fun ChartView(
     val metrics = structuredData.metrics ?: return
     if (metrics.isEmpty()) return
 
-    val primaryColor = MaterialTheme.colorScheme.primary
-    val secondaryColor = MaterialTheme.colorScheme.secondary
-    val tertiaryColor = MaterialTheme.colorScheme.tertiary
-
-    // Extract numeric values from metrics
-    val chartData = remember(metrics) {
-        extractChartData(metrics)
-    }
-
+    val chartData = remember(metrics) { extractChartData(metrics) }
     if (chartData.labels.isEmpty() || chartData.values.isEmpty()) return
 
-    val modelProducer = remember(chartData) {
-        CartesianChartModelProducer.build {
-            when (structuredData.chartType) {
-                "line" -> {
-                    lineSeries {
-                        chartData.values.forEach { series ->
-                            series(series)
-                        }
-                    }
-                }
-                else -> {
-                    // Default to bar chart
-                    columnSeries {
-                        chartData.values.forEach { series ->
-                            series(series)
-                        }
-                    }
-                }
-            }
-        }
-    }
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val maxValue = chartData.values.firstOrNull()?.maxOfOrNull { it.toDouble() } ?: 1.0
 
-    when (structuredData.chartType) {
-        "line" -> {
-            CartesianChartHost(
-                chart = rememberCartesianChart(
-                    rememberLineCartesianLayer(),
-                    startAxis = rememberStartAxis(),
-                    bottomAxis = rememberBottomAxis()
-                ),
-                modelProducer = modelProducer,
-                modifier = modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .padding(top = 8.dp)
-            )
-        }
-        else -> {
-            // Bar chart (default)
-            CartesianChartHost(
-                chart = rememberCartesianChart(
-                    rememberColumnCartesianLayer(),
-                    startAxis = rememberStartAxis(),
-                    bottomAxis = rememberBottomAxis()
-                ),
-                modelProducer = modelProducer,
-                modifier = modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .padding(top = 8.dp)
-            )
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        chartData.labels.forEachIndexed { index, label ->
+            val value = chartData.values.firstOrNull()?.getOrNull(index)?.toDouble() ?: 0.0
+            val fraction = (value / maxValue).coerceIn(0.0, 1.0).toFloat()
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(0.3f)
+                )
+                Box(
+                    modifier = Modifier
+                        .weight(0.5f)
+                        .height(16.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(fraction)
+                            .height(16.dp)
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(primaryColor)
+                    )
+                }
+                Text(
+                    text = formatNumber(value),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(0.2f)
+                )
+            }
         }
     }
 }
 
-/**
- * Data extracted from JSON metrics for chart rendering.
- */
+private fun formatNumber(value: Double): String {
+    return if (value >= 1000) {
+        String.format("%.1fK", value / 1000)
+    } else if (value == value.toLong().toDouble()) {
+        value.toLong().toString()
+    } else {
+        String.format("%.1f", value)
+    }
+}
+
 private data class ChartData(
     val labels: List<String>,
     val values: List<List<Number>>,
     val seriesNames: List<String>
 )
 
-/**
- * Extracts chart-compatible data from a list of JSON metric objects.
- *
- * Each JSON object represents one data point (e.g., one platform).
- * The first string field is used as the label, and all numeric fields
- * become separate data series.
- *
- * Example input:
- * ```json
- * [
- *   { "platform": "instagram", "likes": 1203, "comments": 89 },
- *   { "platform": "facebook",  "likes": 890,  "comments": 67 }
- * ]
- * ```
- * Produces labels: ["instagram", "facebook"]
- * Series "likes": [1203, 890], "comments": [89, 67]
- */
 private fun extractChartData(
     metrics: List<kotlinx.serialization.json.JsonObject>
 ): ChartData {
@@ -142,7 +110,6 @@ private fun extractChartData(
     val labels = mutableListOf<String>()
     val seriesMap = mutableMapOf<String, MutableList<Number>>()
 
-    // Determine which keys are labels (strings) vs values (numbers)
     val firstMetric = metrics.first()
     val labelKey = firstMetric.entries.firstOrNull { entry ->
         val prim = entry.value as? JsonPrimitive
@@ -158,14 +125,9 @@ private fun extractChartData(
 
     if (numericKeys.isEmpty()) return ChartData(emptyList(), emptyList(), emptyList())
 
-    // Initialize series
-    numericKeys.forEach { key ->
-        seriesMap[key] = mutableListOf()
-    }
+    numericKeys.forEach { key -> seriesMap[key] = mutableListOf() }
 
-    // Extract data from each metric
     metrics.forEach { metricObj ->
-        // Extract label
         val label = if (labelKey != null) {
             (metricObj[labelKey] as? JsonPrimitive)?.content ?: ""
         } else {
@@ -173,7 +135,6 @@ private fun extractChartData(
         }
         labels.add(label)
 
-        // Extract numeric values
         numericKeys.forEach { key ->
             val value = (metricObj[key] as? JsonPrimitive)?.doubleOrNull ?: 0.0
             seriesMap[key]?.add(value)

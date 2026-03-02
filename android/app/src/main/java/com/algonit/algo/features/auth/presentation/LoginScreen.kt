@@ -4,7 +4,7 @@ import android.app.Activity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Image
+import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -47,7 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
+
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -58,7 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.algonit.algo.R
+
 
 /**
  * Login screen with email/password fields, biometric authentication option,
@@ -109,9 +109,10 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(48.dp))
 
             // App Logo
-            Image(
-                painter = painterResource(id = R.drawable.algo_logo),
+            Icon(
+                imageVector = Icons.Filled.ChatBubble,
                 contentDescription = "Algo Logo",
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(96.dp)
             )
 

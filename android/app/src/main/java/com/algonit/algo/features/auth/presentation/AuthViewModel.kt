@@ -137,6 +137,7 @@ class AuthViewModel @Inject constructor(
                                 )
                             }
                         }
+                        else -> { }
                     }
                 }
             } else {
@@ -185,6 +186,7 @@ class AuthViewModel @Inject constructor(
                             )
                         }
                     }
+                    else -> { }
                 }
             } else {
                 _uiState.update {
@@ -228,6 +230,7 @@ class AuthViewModel @Inject constructor(
                         )
                     }
                 }
+                else -> { }
             }
         }
     }
@@ -263,6 +266,7 @@ class AuthViewModel @Inject constructor(
                         )
                     }
                 }
+                else -> { }
             }
         }
     }
@@ -350,6 +354,7 @@ class AuthViewModel @Inject constructor(
                                     it.copy(error = "Session expired. Please log in again.")
                                 }
                             }
+                            else -> { }
                         }
                     }
                 }

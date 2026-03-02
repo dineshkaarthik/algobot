@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.algonit.algo.core.network.WebSocketClient
-import com.algonit.algo.core.network.WsEvent
+import com.algonit.algo.core.network.WebSocketEvent
 import com.algonit.algo.core.util.AppResult
 import com.algonit.algo.features.chat.data.model.ChatAPIResponse
 import com.algonit.algo.features.chat.data.model.Message
@@ -115,6 +115,7 @@ class ChatViewModel @Inject constructor(
                         )
                     }
                 }
+                else -> { }
             }
         }
     }
@@ -146,6 +147,7 @@ class ChatViewModel @Inject constructor(
                 is AppResult.Error -> {
                     _uiState.update { it.copy(isLoading = false, error = result.error.toUserMessage()) }
                 }
+                else -> { }
             }
         }
     }
@@ -175,6 +177,7 @@ class ChatViewModel @Inject constructor(
                 is AppResult.Error -> {
                     _uiState.update { it.copy(isLoading = false, error = result.error.toUserMessage()) }
                 }
+                else -> { }
             }
         }
     }
@@ -205,6 +208,7 @@ class ChatViewModel @Inject constructor(
                     currentPage--
                     _uiState.update { it.copy(isLoadingMore = false) }
                 }
+                else -> { }
             }
         }
     }
@@ -255,6 +259,7 @@ class ChatViewModel @Inject constructor(
                 is AppResult.Error -> {
                     _uiState.update { it.copy(isLoading = false, error = result.error.toUserMessage()) }
                 }
+                else -> { }
             }
         }
     }
@@ -273,30 +278,31 @@ class ChatViewModel @Inject constructor(
     /**
      * Handles individual WebSocket events for streaming and alerts.
      */
-    private fun handleWebSocketEvent(event: WsEvent) {
+    private fun handleWebSocketEvent(event: WebSocketEvent) {
         val currentConvId = _uiState.value.conversationId
 
-        when (event.type) {
-            "typing" -> {
+        when (event) {
+            is WebSocketEvent.Typing -> {
                 if (event.conversationId == currentConvId) {
                     _uiState.update { it.copy(isStreaming = true, streamingText = "") }
                 }
             }
-            "stream" -> {
+            is WebSocketEvent.StreamChunk -> {
                 if (event.conversationId == currentConvId) {
                     _uiState.update { state ->
                         state.copy(
                             isStreaming = true,
-                            streamingText = state.streamingText + (event.chunk ?: "")
+                            streamingText = state.streamingText + event.chunk
                         )
                     }
                 }
             }
-            "stream_end" -> {
+            is WebSocketEvent.StreamEnd -> {
                 if (event.conversationId == currentConvId) {
                     _uiState.update { it.copy(isStreaming = false) }
                 }
             }
+            else -> { }
         }
     }
 

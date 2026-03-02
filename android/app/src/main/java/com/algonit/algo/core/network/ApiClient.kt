@@ -34,12 +34,12 @@ import javax.inject.Singleton
  */
 @Singleton
 class ApiClient @Inject constructor(
-    private val httpClient: HttpClient,
+    @PublishedApi internal val httpClient: HttpClient,
     private val secureStorage: SecureStorage,
-    private val json: Json,
-    private val authInterceptor: AuthInterceptor
+    @PublishedApi internal val json: Json,
+    @PublishedApi internal val authInterceptor: AuthInterceptor
 ) {
-    private val baseUrl: String get() = ApiEndpoints.BASE_URL
+    @PublishedApi internal val baseUrl: String get() = ApiEndpoints.BASE_URL
 
     /**
      * Performs an authenticated GET request.

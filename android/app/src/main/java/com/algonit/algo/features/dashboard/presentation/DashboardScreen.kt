@@ -150,16 +150,10 @@ fun DashboardScreen(
                                 items = uiState.alerts,
                                 key = { it.id }
                             ) { alert ->
-                                AnimatedVisibility(
-                                    visible = true,
-                                    enter = fadeIn(),
-                                    exit = fadeOut()
-                                ) {
-                                    AlertCard(
-                                        alert = alert,
-                                        onActionClick = { /* Navigate based on action */ }
-                                    )
-                                }
+                                AlertCard(
+                                    alert = alert,
+                                    onActionClick = { /* Navigate based on action */ }
+                                )
                             }
                         }
 

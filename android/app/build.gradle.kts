@@ -117,9 +117,6 @@ dependencies {
     implementation("com.google.firebase:firebase-messaging-ktx")
     implementation("com.google.firebase:firebase-analytics-ktx")
 
-    // Vico Charts
-    implementation("com.patrykandpatrick.vico:compose-m3:2.0.0-beta.1")
-
     // Kotlinx Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 

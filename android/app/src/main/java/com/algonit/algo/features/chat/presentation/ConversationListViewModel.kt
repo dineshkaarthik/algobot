@@ -77,6 +77,7 @@ class ConversationListViewModel @Inject constructor(
                             )
                         }
                     }
+                    else -> { }
                 }
             }
         }
@@ -106,6 +107,7 @@ class ConversationListViewModel @Inject constructor(
                     currentPage--
                     _uiState.update { it.copy(isLoadingMore = false) }
                 }
+                else -> { }
             }
         }
     }
@@ -137,6 +139,7 @@ class ConversationListViewModel @Inject constructor(
                         )
                     }
                 }
+                else -> { }
             }
         }
     }
@@ -167,6 +170,7 @@ class ConversationListViewModel @Inject constructor(
                         )
                     }
                 }
+                else -> { }
             }
         }
     }

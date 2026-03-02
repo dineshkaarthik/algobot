@@ -137,7 +137,7 @@ class AlgoFirebaseService : FirebaseMessagingService() {
                     contentType(ContentType.Application.Json)
                     setBody(
                         DeviceRegistration(
-                            deviceId = getDeviceId(),
+                            deviceId = getAlgoDeviceId(),
                             deviceType = "android",
                             pushToken = token,
                             appVersion = getAppVersion(),
@@ -151,7 +151,7 @@ class AlgoFirebaseService : FirebaseMessagingService() {
         }
     }
 
-    private fun getDeviceId(): String {
+    private fun getAlgoDeviceId(): String {
         return android.provider.Settings.Secure.getString(
             contentResolver,
             android.provider.Settings.Secure.ANDROID_ID
