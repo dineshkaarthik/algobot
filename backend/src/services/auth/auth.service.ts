@@ -235,16 +235,22 @@ export class AuthService {
         throw new AuthError('Invalid API key', 'INVALID_API_KEY', 401);
       }
       const data = await res.json() as any;
+      // Algonit /me returns { user: { id, email, firstName, lastName, company, jobTitle } }
+      const u = data.user || data;
       profile = {
-        name: data.name || data.fullName || 'Algonit User',
-        email: data.email || `user@algonit.local`,
-        orgId: String(data.orgId || data.organizationId || data.id || 'default'),
-        orgName: data.orgName || data.organizationName || data.companyName || 'My Organization',
+        name: [u.firstName, u.lastName].filter(Boolean).join(' ') || u.name || 'Algonit User',
+        email: u.email || `user@algonit.local`,
+        orgId: String(u.id || 'default'),
+        orgName: u.company || 'My Organization',
       };
     } catch (error) {
       if (error instanceof AuthError) throw error;
       logger.error({ error }, 'Failed to validate Algonit API key');
-      throw new AuthError('Could not validate API key with Algonit', 'API_KEY_VALIDATION_FAILED', 401);
+      throw new AuthError(
+        `Could not validate API key: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        'API_KEY_VALIDATION_FAILED',
+        401,
+      );
     }
 
     // 2. Find or create tenant by algonitOrgId
