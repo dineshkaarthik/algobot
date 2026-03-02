@@ -66,9 +66,9 @@ class ChatViewModel @Inject constructor(
     private var currentPage = 1
 
     init {
-        // Restore conversation ID if navigating back
+        // Restore conversation ID if navigating back ("new" means start fresh)
         val convId = savedStateHandle.get<String>("conversationId")
-        if (convId != null) {
+        if (convId != null && convId != "new") {
             _uiState.update { it.copy(conversationId = convId) }
             loadMessageHistory(convId)
         }

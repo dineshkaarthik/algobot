@@ -70,7 +70,19 @@ export async function chatRoutes(app: FastifyInstance) {
    */
   app.post('/message', async (request: FastifyRequest, reply: FastifyReply) => {
     const startTime = Date.now();
-    const body = chatMessageSchema.parse(request.body);
+
+    let body;
+    try {
+      body = chatMessageSchema.parse(request.body);
+    } catch (error) {
+      logger.warn({ err: error, body: request.body }, 'Invalid chat message request');
+      return reply.status(400).send({
+        error: { code: 'VALIDATION_ERROR', message: 'Invalid request format' },
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    try {
 
     const userContext = {
       user_id: request.userId,
@@ -243,6 +255,14 @@ export async function chatRoutes(app: FastifyInstance) {
       },
       timestamp: new Date().toISOString(),
     });
+
+    } catch (error) {
+      logger.error({ err: error, tenantId: request.tenantId }, 'Chat message processing failed');
+      return reply.status(500).send({
+        error: { code: 'PROCESSING_ERROR', message: 'Failed to process your message. Please try again.' },
+        timestamp: new Date().toISOString(),
+      });
+    }
   });
 
   /**
