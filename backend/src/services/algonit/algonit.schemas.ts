@@ -416,6 +416,62 @@ export const InsightsResponseSchema = z.object({
   campaignPerformanceByPlatform: z.array(z.record(z.unknown())),
 }).passthrough();
 
+/** Daily metric snapshot sub-schema */
+export const MetricSnapshotSchema = z.object({
+  date: z.string(),
+  platform: z.string(),
+  pageId: z.string().nullable().optional(),
+  pageName: z.string().nullable().optional(),
+  followers: z.number(),
+  reach: z.number(),
+  impressions: z.number(),
+  engagement: z.number(),
+  likes: z.number().optional().default(0),
+  comments: z.number().optional().default(0),
+  shares: z.number().optional().default(0),
+}).passthrough();
+
+/** GET /api/algo/metrics */
+export const MetricsResponseSchema = z.object({
+  metrics: z.array(MetricSnapshotSchema),
+  dateRange: DateRangeSchema.optional(),
+  filters: z.object({
+    platform: z.string().nullable().optional(),
+    pageId: z.string().nullable().optional(),
+    days: z.number().optional(),
+  }).passthrough().optional(),
+}).passthrough();
+
+/** Growth entry sub-schema */
+const GrowthPeriodSchema = z.object({
+  change: z.number().optional(),
+  percent: z.number(),
+}).passthrough();
+
+export const GrowthEntrySchema = z.object({
+  platform: z.string(),
+  pageId: z.string().nullable().optional(),
+  pageName: z.string().nullable().optional(),
+  followers: z.object({
+    current: z.number(),
+    '7d': GrowthPeriodSchema.optional(),
+    '30d': GrowthPeriodSchema.optional(),
+  }).passthrough(),
+  reach: z.object({
+    '7d': z.object({ percent: z.number() }).passthrough().optional(),
+    '30d': z.object({ percent: z.number() }).passthrough().optional(),
+  }).passthrough().optional(),
+}).passthrough();
+
+/** GET /api/algo/metrics/growth */
+export const MetricsGrowthResponseSchema = z.object({
+  growth: z.array(GrowthEntrySchema),
+  dataQuality: z.object({
+    completeness: z.number().optional(),
+    lastUpdated: z.string().optional(),
+  }).passthrough().optional(),
+}).passthrough();
+
 // ─── Action Response Schemas ─────────────────────────────────
 
 export const PauseCampaignResponseSchema = z.object({

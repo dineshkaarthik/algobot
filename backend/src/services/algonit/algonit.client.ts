@@ -49,6 +49,8 @@ import {
   AssignTaskResponseSchema,
   GenerateReportResponseSchema,
   InsightsResponseSchema,
+  MetricsResponseSchema,
+  MetricsGrowthResponseSchema,
 } from './algonit.schemas.js';
 import type {
   ProfileResponse,
@@ -73,6 +75,8 @@ import type {
   AssignTaskResponse,
   GenerateReportResponse,
   InsightsResponse,
+  MetricsResponse,
+  MetricsGrowthResponse,
 } from './algonit.types.js';
 import type { ZodType } from 'zod';
 
@@ -393,7 +397,7 @@ export class AlgonitClient {
   }
 
   /** GET /api/algo/engagement */
-  async getSocialEngagement(platform?: string): Promise<SocialEngagementResponse> {
+  async getSocialEngagement(platform?: string, days?: number, dateFrom?: string, dateTo?: string): Promise<SocialEngagementResponse> {
     if (this.useMocks) {
       return {
         dateRange: { from: null, to: null },
@@ -417,7 +421,7 @@ export class AlgonitClient {
     }
 
     return this.request<SocialEngagementResponse>(
-      'GET', '/engagement', { platform },
+      'GET', '/engagement', { platform, days, date_from: dateFrom, date_to: dateTo },
       SocialEngagementResponseSchema, 'SocialEngagement',
     );
   }
@@ -483,6 +487,46 @@ export class AlgonitClient {
       'GET', '/insights',
       { date_from: dateFrom, date_to: dateTo, platform },
       InsightsResponseSchema, 'Insights',
+    );
+  }
+
+  /** GET /api/algo/metrics — Raw daily snapshots with page-level filtering */
+  async getMetrics(platform?: string, pageId?: string, days?: number, dateFrom?: string, dateTo?: string): Promise<MetricsResponse> {
+    if (this.useMocks) {
+      return {
+        metrics: [
+          { date: '2026-03-02', platform: 'instagram', pageId: 'wandervise_algonit', pageName: 'Wandervise Algonit', followers: 47, reach: 1380, impressions: 2200, engagement: 1.7, likes: 24, comments: 3, shares: 1 },
+          { date: '2026-03-01', platform: 'instagram', pageId: 'wandervise_algonit', pageName: 'Wandervise Algonit', followers: 46, reach: 1250, impressions: 2050, engagement: 1.5, likes: 20, comments: 2, shares: 1 },
+          { date: '2026-03-02', platform: 'instagram', pageId: 'algonit_tech', pageName: 'Algonit Tech', followers: 120, reach: 3200, impressions: 5100, engagement: 2.3, likes: 78, comments: 12, shares: 5 },
+          { date: '2026-03-02', platform: 'facebook', pageId: 'wandervise_fb', pageName: 'Wandervise', followers: 230, reach: 4500, impressions: 6800, engagement: 3.1, likes: 145, comments: 28, shares: 18 },
+        ],
+        dateRange: { from: dateFrom || '2026-02-24', to: dateTo || '2026-03-03' },
+        filters: { platform: platform || null, pageId: pageId || null, days: days || 7 },
+      };
+    }
+
+    return this.request<MetricsResponse>(
+      'GET', '/metrics', { platform, page_id: pageId, days, date_from: dateFrom, date_to: dateTo },
+      MetricsResponseSchema, 'Metrics',
+    );
+  }
+
+  /** GET /api/algo/metrics/growth — Pre-computed follower and reach growth */
+  async getMetricsGrowth(): Promise<MetricsGrowthResponse> {
+    if (this.useMocks) {
+      return {
+        growth: [
+          { platform: 'instagram', pageId: 'wandervise_algonit', pageName: 'Wandervise Algonit', followers: { current: 47, '7d': { change: 3, percent: 6.8 }, '30d': { change: 12, percent: 34.3 } }, reach: { '7d': { percent: 12.5 }, '30d': { percent: 45.0 } } },
+          { platform: 'instagram', pageId: 'algonit_tech', pageName: 'Algonit Tech', followers: { current: 120, '7d': { change: 8, percent: 7.1 }, '30d': { change: 25, percent: 26.3 } }, reach: { '7d': { percent: 18.2 }, '30d': { percent: 52.0 } } },
+          { platform: 'facebook', pageId: 'wandervise_fb', pageName: 'Wandervise', followers: { current: 230, '7d': { change: 5, percent: 2.2 }, '30d': { change: 18, percent: 8.5 } }, reach: { '7d': { percent: 8.0 }, '30d': { percent: 22.0 } } },
+        ],
+        dataQuality: { completeness: 0.95, lastUpdated: new Date().toISOString() },
+      };
+    }
+
+    return this.request<MetricsGrowthResponse>(
+      'GET', '/metrics/growth', {},
+      MetricsGrowthResponseSchema, 'MetricsGrowth',
     );
   }
 

@@ -426,6 +426,57 @@ export interface InsightsResponse {
   campaignPerformanceByPlatform: Record<string, unknown>[];
 }
 
+/** Daily metric snapshot (from /metrics endpoint) */
+export interface MetricSnapshot {
+  date: string;
+  platform: string;
+  pageId?: string | null;
+  pageName?: string | null;
+  followers: number;
+  reach: number;
+  impressions: number;
+  engagement: number;
+  likes?: number;
+  comments?: number;
+  shares?: number;
+}
+
+/** GET /api/algo/metrics */
+export interface MetricsResponse {
+  metrics: MetricSnapshot[];
+  dateRange?: DateRange;
+  filters?: {
+    platform?: string | null;
+    pageId?: string | null;
+    days?: number;
+  };
+}
+
+/** Follower growth data per page/platform */
+export interface GrowthEntry {
+  platform: string;
+  pageId?: string | null;
+  pageName?: string | null;
+  followers: {
+    current: number;
+    '7d'?: { change?: number; percent: number };
+    '30d'?: { change?: number; percent: number };
+  };
+  reach?: {
+    '7d'?: { percent: number };
+    '30d'?: { percent: number };
+  };
+}
+
+/** GET /api/algo/metrics/growth */
+export interface MetricsGrowthResponse {
+  growth: GrowthEntry[];
+  dataQuality?: {
+    completeness?: number;
+    lastUpdated?: string;
+  };
+}
+
 // ─── Action Response Types ───────────────────────────────────
 
 /** PATCH /api/algo/campaigns/:id (pause) */
@@ -491,7 +542,9 @@ export type AlgonitQueryResponse =
   | DealsResponse
   | SocialEngagementResponse
   | LeadsResponse
-  | InsightsResponse;
+  | InsightsResponse
+  | MetricsResponse
+  | MetricsGrowthResponse;
 
 export type AlgonitActionResponse =
   | PauseCampaignResponse

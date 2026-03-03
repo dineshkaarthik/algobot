@@ -20,6 +20,8 @@ const CACHE_TTLS: Record<string, number> = {
   '/engagement': 300,                    // 5 min
   '/leads': 120,                         // 2 min
   '/insights': 1800,                     // 30 min (slow-moving analytical data)
+  '/metrics': 300,                       // 5 min (daily snapshots)
+  '/metrics/growth': 600,               // 10 min (pre-computed growth)
 };
 
 // Campaign performance uses dynamic paths: /campaigns/:id/performance

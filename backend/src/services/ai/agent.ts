@@ -301,6 +301,9 @@ export class AlgoAgent {
       case 'get_social_engagement':
         return this.algonit.getSocialEngagement(
           input.platform as string | undefined,
+          input.days as number | undefined,
+          input.date_from as string | undefined,
+          input.date_to as string | undefined,
         ) as any;
 
       case 'get_leads':
@@ -315,6 +318,18 @@ export class AlgoAgent {
           input.date_to as string | undefined,
           input.platform as string | undefined,
         ) as any;
+
+      case 'get_metrics':
+        return this.algonit.getMetrics(
+          input.platform as string | undefined,
+          input.page_id as string | undefined,
+          input.days as number | undefined,
+          input.date_from as string | undefined,
+          input.date_to as string | undefined,
+        ) as any;
+
+      case 'get_follower_growth':
+        return this.algonit.getMetricsGrowth() as any;
 
       // Growth Copilot tools
       case 'get_growth_summary': {

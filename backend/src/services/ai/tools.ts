@@ -33,6 +33,8 @@ export type AlgonitToolName =
   | 'get_social_engagement'
   | 'get_leads'
   | 'get_insights'
+  | 'get_metrics'
+  | 'get_follower_growth'
   // Growth Copilot tools (3)
   | 'get_growth_summary'
   | 'get_recommendations'
@@ -201,7 +203,7 @@ export const ALGONIT_TOOLS = [
   {
     name: 'get_social_engagement',
     description:
-      'Get social media engagement metrics aggregated across all connected accounts per platform: likes, comments, shares, impressions, reach, CTR. Returns overall totals and per-platform breakdowns. Note: if the user manages multiple pages on one platform (e.g. 3 Instagram pages), this returns the combined total across all pages. For individual post performance, use get_insights. Always combine this with get_insights for the richest social media analysis.',
+      'Get social media engagement metrics aggregated across all connected accounts per platform: likes, comments, shares, impressions, reach, CTR. Returns overall totals and per-platform breakdowns. For PAGE-LEVEL metrics (per page/account), use get_metrics instead. For individual post performance, use get_insights. Combine with get_insights for the richest analysis.',
     input_schema: {
       type: 'object' as const,
       properties: {
@@ -209,6 +211,18 @@ export const ALGONIT_TOOLS = [
           type: 'string',
           enum: ['instagram', 'facebook', 'twitter', 'linkedin'],
           description: 'Filter by specific platform. Omit for all platforms.',
+        },
+        days: {
+          type: 'number',
+          description: 'Number of days of engagement data. Defaults to all available.',
+        },
+        date_from: {
+          type: 'string',
+          description: 'Start date in YYYY-MM-DD format.',
+        },
+        date_to: {
+          type: 'string',
+          description: 'End date in YYYY-MM-DD format.',
         },
       },
     },
@@ -255,6 +269,50 @@ export const ALGONIT_TOOLS = [
           description: 'Filter insights to a specific platform. Omit for cross-platform analysis.',
         },
       },
+    },
+  },
+
+  // ─── SOCIAL METRICS TOOLS (page-level data) ──────────────
+
+  {
+    name: 'get_metrics',
+    description:
+      'Get raw daily metric snapshots per social media page: followers, reach, impressions, engagement rate, likes, comments, shares. This is the ONLY tool that provides PAGE-LEVEL data — each row is tied to a specific page (e.g. "wandervise_algonit" on Instagram). Use page_id to filter to a specific page, or omit it to see all pages. Supports date range filtering. Use this when the user asks about a specific page, follower counts, reach over time, or daily metrics.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        platform: {
+          type: 'string',
+          enum: ['instagram', 'facebook', 'twitter', 'linkedin'],
+          description: 'Filter by platform. Omit for all platforms.',
+        },
+        page_id: {
+          type: 'string',
+          description: 'Filter by specific page/account ID (e.g. "wandervise_algonit"). Omit to see all pages.',
+        },
+        days: {
+          type: 'number',
+          description: 'Number of days of data to return. Defaults to 7.',
+        },
+        date_from: {
+          type: 'string',
+          description: 'Start date in YYYY-MM-DD format.',
+        },
+        date_to: {
+          type: 'string',
+          description: 'End date in YYYY-MM-DD format.',
+        },
+      },
+    },
+  },
+
+  {
+    name: 'get_follower_growth',
+    description:
+      'Get pre-computed follower growth report for all connected social media pages. Returns current follower count, 7-day and 30-day growth (absolute change + percentage), and reach growth percentage per page. Use this when the user asks "how are my followers growing?", "which page is growing fastest?", "follower count", or any growth-related question. This gives you page names and IDs which you can use with get_metrics for deeper analysis.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {},
     },
   },
 

@@ -37,6 +37,8 @@ import {
   SocialEngagementResponseSchema,
   LeadsResponseSchema,
   InsightsResponseSchema,
+  MetricsResponseSchema,
+  MetricsGrowthResponseSchema,
 } from '../services/algonit/algonit.schemas.js';
 import type { ZodType } from 'zod';
 
@@ -273,6 +275,41 @@ async function runAllTests() {
   );
   results.push(insightsIgResult);
   printResult(insightsIgResult);
+
+  // ─── 16. Metrics (daily snapshots) ─────────────────────
+  console.log('Testing GET /metrics?days=7...');
+  const metricsResult = await testEndpoint(
+    'Metrics', 'GET', '/metrics', MetricsResponseSchema,
+    { days: '7' },
+  );
+  results.push(metricsResult);
+  printResult(metricsResult);
+
+  // ─── 16b. Metrics with page_id filter ──────────────────
+  console.log('Testing GET /metrics?platform=instagram&days=7...');
+  const metricsIgResult = await testEndpoint(
+    'Metrics (Instagram)', 'GET', '/metrics', MetricsResponseSchema,
+    { platform: 'instagram', days: '7' },
+  );
+  results.push(metricsIgResult);
+  printResult(metricsIgResult);
+
+  // ─── 17. Metrics Growth ────────────────────────────────
+  console.log('Testing GET /metrics/growth...');
+  const growthResult = await testEndpoint(
+    'MetricsGrowth', 'GET', '/metrics/growth', MetricsGrowthResponseSchema,
+  );
+  results.push(growthResult);
+  printResult(growthResult);
+
+  // ─── 17b. Engagement with date filter ──────────────────
+  console.log('Testing GET /engagement?days=7...');
+  const engDateResult = await testEndpoint(
+    'Engagement (7d)', 'GET', '/engagement', SocialEngagementResponseSchema,
+    { days: '7' },
+  );
+  results.push(engDateResult);
+  printResult(engDateResult);
 
   // ─── Summary ──────────────────────────────────────────
   printSummary();
