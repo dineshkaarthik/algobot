@@ -73,7 +73,7 @@ export const ALGONIT_TOOLS = [
   {
     name: 'get_posts',
     description:
-      'Get social media posts with optional filtering by status and platform. Use this when the user asks about their posts, scheduled posts, or published content.',
+      'Get social media posts with optional filtering by status and platform. Returns post content, platform, status, and scheduling info. Use this when the user asks about their posts, scheduled posts, or published content. For engagement metrics on individual posts, use get_insights instead (it returns top posts with likes, comments, shares). Combine with get_insights and get_social_engagement for a complete social media picture.',
     input_schema: {
       type: 'object' as const,
       properties: {
@@ -151,7 +151,7 @@ export const ALGONIT_TOOLS = [
   {
     name: 'get_dashboard_summary',
     description:
-      'Get a single-call snapshot of all key business metrics: campaigns, leads, credits, follow-ups, engagement, pipeline. Use this when the user asks for an overview, summary, or "how\'s everything going?"',
+      'Get a high-level snapshot of business metrics: active campaigns count, credit balance, recent posts count, and market radar alerts. This is a lightweight overview tool. For social media performance details, use get_insights + get_social_engagement instead. For growth intelligence, prefer get_growth_summary.',
     input_schema: {
       type: 'object' as const,
       properties: {},
@@ -201,7 +201,7 @@ export const ALGONIT_TOOLS = [
   {
     name: 'get_social_engagement',
     description:
-      'Get social media engagement metrics by platform: likes, comments, shares, impressions, reach, CTR. Use this when user asks about social media engagement or social performance.',
+      'Get social media engagement metrics aggregated across all connected accounts per platform: likes, comments, shares, impressions, reach, CTR. Returns overall totals and per-platform breakdowns. Note: if the user manages multiple pages on one platform (e.g. 3 Instagram pages), this returns the combined total across all pages. For individual post performance, use get_insights. Always combine this with get_insights for the richest social media analysis.',
     input_schema: {
       type: 'object' as const,
       properties: {
@@ -237,7 +237,7 @@ export const ALGONIT_TOOLS = [
   {
     name: 'get_insights',
     description:
-      'Get analytical insights about content performance, including which content types outperform others, top posts, and platform comparisons. Use this when the user asks about performance insights, content analysis, what\'s working, what\'s not, trends, recommendations, or "how are things going?" Also use this proactively alongside other data-fetching tools to enrich responses with analytical depth.',
+      'Your BEST tool for social media analytics. Returns: (1) AI-generated text insights about performance trends, (2) content type breakdowns with avg engagement per type (reels vs images vs articles etc.), (3) TOP POSTS with exact engagement metrics (likes, comments, shares, impressions per post), (4) campaign performance by platform. This is the ONLY tool that gives you per-post engagement numbers. Use it whenever the user asks about posts, social media, performance, what\'s working, analytics, or "how are my pages doing." Always use this alongside get_social_engagement for the most complete picture.',
     input_schema: {
       type: 'object' as const,
       properties: {
