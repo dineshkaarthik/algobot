@@ -109,7 +109,7 @@ export class AlgonitClient {
   constructor(tenantId: string) {
     const env = getEnv();
     this.baseUrl = env.ALGONIT_API_URL;
-    this.useMocks = env.NODE_ENV === 'development';
+    this.useMocks = env.NODE_ENV === 'test';
     this.tenantId = tenantId;
   }
 

@@ -259,8 +259,41 @@ class ChatViewModel @Inject constructor(
 
         // Auto-speak assistant response when voice is enabled
         if (_uiState.value.voiceEnabled) {
-            tts.speak(response.response.text)
+            tts.speak(cleanForSpeech(response.response.text))
         }
+    }
+
+    /**
+     * Strips markdown formatting and special characters so TTS reads
+     * natural, human-like speech instead of raw markup.
+     */
+    private fun cleanForSpeech(text: String): String {
+        return text
+            // Remove markdown headers (## Header)
+            .replace(Regex("""^#{1,6}\s+""", RegexOption.MULTILINE), "")
+            // Remove bold/italic markers
+            .replace(Regex("""\*{1,3}([^*]+)\*{1,3}"""), "$1")
+            .replace(Regex("""_{1,3}([^_]+)_{1,3}"""), "$1")
+            // Remove markdown links [text](url) → text
+            .replace(Regex("""\[([^\]]+)]\([^)]+\)"""), "$1")
+            // Remove inline code backticks
+            .replace(Regex("""`([^`]+)`"""), "$1")
+            // Remove code blocks
+            .replace(Regex("""```[\s\S]*?```"""), "")
+            // Remove bullet points and list markers
+            .replace(Regex("""^[\s]*[-*•]\s+""", RegexOption.MULTILINE), "")
+            .replace(Regex("""^\s*\d+\.\s+""", RegexOption.MULTILINE), "")
+            // Remove horizontal rules
+            .replace(Regex("""^[-*_]{3,}\s*$""", RegexOption.MULTILINE), "")
+            // Remove table formatting (pipes and dashes)
+            .replace(Regex("""\|"""), ",")
+            .replace(Regex("""^[-:| ]+$""", RegexOption.MULTILINE), "")
+            // Remove emoji-like special chars but keep text
+            .replace(Regex("""[📊📈📉🔔⚠️✅❌🎯💡🔥📋➡️▶️•·]"""), "")
+            // Collapse multiple newlines/spaces
+            .replace(Regex("""\n{3,}"""), "\n\n")
+            .replace(Regex(""" {2,}"""), " ")
+            .trim()
     }
 
     /**
