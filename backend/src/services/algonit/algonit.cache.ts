@@ -30,12 +30,19 @@ const DYNAMIC_TTLS: Array<{ prefix: string; ttl: number }> = [
   { prefix: '/campaigns/', ttl: 300 },  // /campaigns/:id/performance → 5 min
 ];
 
-// Map of write endpoints to cache keys they should invalidate
+// Endpoints that should NEVER be cached (trigger live side effects)
+const NO_CACHE_ENDPOINTS = new Set(['/social/sync']);
+
+// Map of endpoints to cache keys they should invalidate after a successful call
 const INVALIDATION_MAP: Record<string, string[]> = {
   'PATCH:/campaigns/': ['/campaigns', '/summary'],  // pause/resume invalidates campaign lists + summary
+  'GET:/social/sync': ['/engagement', '/metrics', '/metrics/growth', '/summary'],  // sync refreshes all social data
 };
 
 function getCacheTtl(endpoint: string): number | null {
+  // Never cache certain endpoints
+  if (NO_CACHE_ENDPOINTS.has(endpoint)) return null;
+
   // Exact match first
   if (CACHE_TTLS[endpoint] !== undefined) return CACHE_TTLS[endpoint];
 

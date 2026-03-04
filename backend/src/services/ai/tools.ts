@@ -35,6 +35,7 @@ export type AlgonitToolName =
   | 'get_insights'
   | 'get_metrics'
   | 'get_follower_growth'
+  | 'sync_social_data'
   // Growth Copilot tools (3)
   | 'get_growth_summary'
   | 'get_recommendations'
@@ -310,6 +311,16 @@ export const ALGONIT_TOOLS = [
     name: 'get_follower_growth',
     description:
       'Get pre-computed follower growth report for all connected social media pages. Returns current follower count, 7-day and 30-day growth (absolute change + percentage), and reach growth percentage per page. Use this when the user asks "how are my followers growing?", "which page is growing fastest?", "follower count", or any growth-related question. This gives you page names and IDs which you can use with get_metrics for deeper analysis.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {},
+    },
+  },
+
+  {
+    name: 'sync_social_data',
+    description:
+      'Trigger a live data refresh from all connected social media platforms (Instagram, Facebook, LinkedIn, Twitter/X). This calls each platform\'s API in real time and saves fresh metrics to the database. IMPORTANT: Call this BEFORE any social analytics query if the user hasn\'t synced recently or if you suspect the data might be stale. After syncing, all other social tools (get_metrics, get_follower_growth, get_social_engagement, get_dashboard_summary) will return fresh, up-to-date data. Returns the synced snapshot for each connected page.',
     input_schema: {
       type: 'object' as const,
       properties: {},

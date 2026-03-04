@@ -355,6 +355,17 @@ export interface MarketRadarResponse {
   recentSignals: MarketRadarSignal[];
 }
 
+/** Social metric entry in /summary response */
+export interface SocialMetricSummary {
+  platform: string;
+  pageId?: string | null;
+  pageName?: string | null;
+  followers: number;
+  reach: number;
+  impressions: number;
+  engagement: number;
+}
+
 /** GET /api/algo/summary */
 export interface DashboardSummaryResponse {
   user: DashboardUser;
@@ -362,6 +373,8 @@ export interface DashboardSummaryResponse {
   posts: { recent: number; published: number; scheduled: number; failed: number };
   campaigns: { active: number };
   marketRadar: { unreadSignals: number; highPriorityUnread: number };
+  socialMetrics?: SocialMetricSummary[];
+  followerGrowth?: GrowthEntry[];
 }
 
 /** GET /api/algo/hot-leads */
@@ -477,6 +490,25 @@ export interface MetricsGrowthResponse {
   };
 }
 
+/** Per-platform sync result from /social/sync */
+export interface SocialSyncEntry {
+  platform: string;
+  pageId?: string | null;
+  pageName?: string | null;
+  followers: number;
+  reach?: number;
+  impressions?: number;
+  newFollowers?: number;
+  syncedAt: string;
+}
+
+/** GET /api/algo/social/sync */
+export interface SocialSyncResponse {
+  synced: SocialSyncEntry[];
+  syncedAt: string;
+  totalPlatforms: number;
+}
+
 // ─── Action Response Types ───────────────────────────────────
 
 /** PATCH /api/algo/campaigns/:id (pause) */
@@ -544,7 +576,8 @@ export type AlgonitQueryResponse =
   | LeadsResponse
   | InsightsResponse
   | MetricsResponse
-  | MetricsGrowthResponse;
+  | MetricsGrowthResponse
+  | SocialSyncResponse;
 
 export type AlgonitActionResponse =
   | PauseCampaignResponse

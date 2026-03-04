@@ -39,6 +39,7 @@ import {
   InsightsResponseSchema,
   MetricsResponseSchema,
   MetricsGrowthResponseSchema,
+  SocialSyncResponseSchema,
 } from '../services/algonit/algonit.schemas.js';
 import type { ZodType } from 'zod';
 
@@ -275,6 +276,14 @@ async function runAllTests() {
   );
   results.push(insightsIgResult);
   printResult(insightsIgResult);
+
+  // ─── 15c. Social Sync (live refresh) ─────────────────────
+  console.log('Testing GET /social/sync (live platform refresh)...');
+  const syncResult = await testEndpoint(
+    'SocialSync', 'GET', '/social/sync', SocialSyncResponseSchema,
+  );
+  results.push(syncResult);
+  printResult(syncResult);
 
   // ─── 16. Metrics (daily snapshots) ─────────────────────
   console.log('Testing GET /metrics?days=7...');

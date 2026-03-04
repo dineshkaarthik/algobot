@@ -282,6 +282,27 @@ export const InsightsPeriodSchema = z.object({
   days: z.number(),
 }).passthrough();
 
+/** Growth period sub-schema (used by GrowthEntry and DashboardSummary) */
+const GrowthPeriodSchema = z.object({
+  change: z.number().optional(),
+  percent: z.number(),
+}).passthrough();
+
+export const GrowthEntrySchema = z.object({
+  platform: z.string(),
+  pageId: z.string().nullable().optional(),
+  pageName: z.string().nullable().optional(),
+  followers: z.object({
+    current: z.number(),
+    '7d': GrowthPeriodSchema.optional(),
+    '30d': GrowthPeriodSchema.optional(),
+  }).passthrough(),
+  reach: z.object({
+    '7d': z.object({ percent: z.number() }).passthrough().optional(),
+    '30d': z.object({ percent: z.number() }).passthrough().optional(),
+  }).passthrough().optional(),
+}).passthrough();
+
 // ─── Query Response Schemas ──────────────────────────────────
 
 /** GET /api/algo/me */
@@ -337,6 +358,17 @@ export const MarketRadarResponseSchema = z.object({
   recentSignals: z.array(MarketRadarSignalSchema),
 }).passthrough();
 
+/** Social metric in /summary response */
+export const SocialMetricSummarySchema = z.object({
+  platform: z.string(),
+  pageId: z.string().nullable().optional(),
+  pageName: z.string().nullable().optional(),
+  followers: z.number(),
+  reach: z.number(),
+  impressions: z.number(),
+  engagement: z.number(),
+}).passthrough();
+
 /** GET /api/algo/summary */
 export const DashboardSummaryResponseSchema = z.object({
   user: DashboardUserSchema,
@@ -352,6 +384,8 @@ export const DashboardSummaryResponseSchema = z.object({
     unreadSignals: z.number(),
     highPriorityUnread: z.number(),
   }).passthrough(),
+  socialMetrics: z.array(SocialMetricSummarySchema).optional(),
+  followerGrowth: z.array(GrowthEntrySchema).optional(),
 }).passthrough();
 
 /** GET /api/algo/hot-leads */
@@ -442,27 +476,6 @@ export const MetricsResponseSchema = z.object({
   }).passthrough().optional(),
 }).passthrough();
 
-/** Growth entry sub-schema */
-const GrowthPeriodSchema = z.object({
-  change: z.number().optional(),
-  percent: z.number(),
-}).passthrough();
-
-export const GrowthEntrySchema = z.object({
-  platform: z.string(),
-  pageId: z.string().nullable().optional(),
-  pageName: z.string().nullable().optional(),
-  followers: z.object({
-    current: z.number(),
-    '7d': GrowthPeriodSchema.optional(),
-    '30d': GrowthPeriodSchema.optional(),
-  }).passthrough(),
-  reach: z.object({
-    '7d': z.object({ percent: z.number() }).passthrough().optional(),
-    '30d': z.object({ percent: z.number() }).passthrough().optional(),
-  }).passthrough().optional(),
-}).passthrough();
-
 /** GET /api/algo/metrics/growth */
 export const MetricsGrowthResponseSchema = z.object({
   growth: z.array(GrowthEntrySchema),
@@ -470,6 +483,25 @@ export const MetricsGrowthResponseSchema = z.object({
     completeness: z.number().optional(),
     lastUpdated: z.string().optional(),
   }).passthrough().optional(),
+}).passthrough();
+
+/** Per-platform sync entry sub-schema */
+export const SocialSyncEntrySchema = z.object({
+  platform: z.string(),
+  pageId: z.string().nullable().optional(),
+  pageName: z.string().nullable().optional(),
+  followers: z.number(),
+  reach: z.number().optional(),
+  impressions: z.number().optional(),
+  newFollowers: z.number().optional(),
+  syncedAt: z.string(),
+}).passthrough();
+
+/** GET /api/algo/social/sync */
+export const SocialSyncResponseSchema = z.object({
+  synced: z.array(SocialSyncEntrySchema),
+  syncedAt: z.string(),
+  totalPlatforms: z.number(),
 }).passthrough();
 
 // ─── Action Response Schemas ─────────────────────────────────

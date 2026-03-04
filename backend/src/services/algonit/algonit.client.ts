@@ -51,6 +51,7 @@ import {
   InsightsResponseSchema,
   MetricsResponseSchema,
   MetricsGrowthResponseSchema,
+  SocialSyncResponseSchema,
 } from './algonit.schemas.js';
 import type {
   ProfileResponse,
@@ -77,6 +78,7 @@ import type {
   InsightsResponse,
   MetricsResponse,
   MetricsGrowthResponse,
+  SocialSyncResponse,
 } from './algonit.types.js';
 import type { ZodType } from 'zod';
 
@@ -530,6 +532,27 @@ export class AlgonitClient {
     );
   }
 
+  /** GET /api/algo/social/sync — Trigger live platform data refresh */
+  async syncSocialData(): Promise<SocialSyncResponse> {
+    if (this.useMocks) {
+      const now = new Date().toISOString();
+      return {
+        synced: [
+          { platform: 'instagram', pageId: 'wandervise_algonit', pageName: 'Wandervise Algonit', followers: 47, reach: 1380, impressions: 2200, newFollowers: 3, syncedAt: now },
+          { platform: 'instagram', pageId: 'algonit_tech', pageName: 'Algonit Tech', followers: 120, reach: 3200, impressions: 5100, newFollowers: 8, syncedAt: now },
+          { platform: 'facebook', pageId: 'wandervise_fb', pageName: 'Wandervise', followers: 230, reach: 4500, impressions: 6800, newFollowers: 5, syncedAt: now },
+        ],
+        syncedAt: now,
+        totalPlatforms: 3,
+      };
+    }
+
+    return this.request<SocialSyncResponse>(
+      'GET', '/social/sync', {},
+      SocialSyncResponseSchema, 'SocialSync',
+    );
+  }
+
   // ─── Action Methods (Live) ────────────────────────────────
 
   /** PATCH /api/algo/campaigns/:id — pause */
@@ -707,10 +730,10 @@ export class AlgonitClient {
     });
 
     // 4. Cache management
+    // Always check for invalidation rules (sync is GET but invalidates social caches)
+    await getCache().invalidate(this.tenantId, method, endpoint);
     if (method === 'GET') {
       await getCache().set(this.tenantId, endpoint, params, result);
-    } else {
-      await getCache().invalidate(this.tenantId, method, endpoint);
     }
 
     // 5. Return typed result

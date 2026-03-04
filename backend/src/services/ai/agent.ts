@@ -331,6 +331,9 @@ export class AlgoAgent {
       case 'get_follower_growth':
         return this.algonit.getMetricsGrowth() as any;
 
+      case 'sync_social_data':
+        return this.algonit.syncSocialData() as any;
+
       // Growth Copilot tools
       case 'get_growth_summary': {
         const summaryService = new GrowthSummaryService(this.algonit);
